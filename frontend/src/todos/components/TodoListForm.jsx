@@ -23,11 +23,18 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
           {todos.map(({ name, done }, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
               <Checkbox
-                defaultChecked={done}
                 sx={{ 
                   '&.Mui-checked': {
                     color: blue[600],
                   },
+                }}
+                checked={done}
+                onChange={(event) => {
+                  setTodos([
+                    ...todos.slice(0, index),
+                    { name: name, done: event.target.checked },
+                    ...todos.slice(index + 1),
+                  ])
                 }}
               />
               <Typography sx={{ margin: '8px' }} variant='h6'>
@@ -41,7 +48,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                   setTodos([
                     // immutable update
                     ...todos.slice(0, index),
-                    { description: event.target.value, done: false },
+                    { name: event.target.value, done: done },
                     ...todos.slice(index + 1),
                   ])
                 }}
@@ -67,7 +74,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               type='button'
               color='primary'
               onClick={() => {
-                setTodos([...todos, { description: '', done: false }])
+                setTodos([...todos, { name: '', done: false }])
               }}
             >
               Add Todo <AddIcon />
