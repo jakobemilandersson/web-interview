@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { TextField, Card, CardContent, CardActions, Button, Typography } from '@mui/material'
+import { TextField, Card, CardContent, CardActions, Button, Typography, Checkbox } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import { blue } from '@mui/material/colors';
 
 export const TodoListForm = ({ todoList, saveTodoList }) => {
   const [todos, setTodos] = useState(todoList.todos)
@@ -19,8 +20,16 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
           onSubmit={handleSubmit}
           style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
         >
-          {todos.map((name, index) => (
+          {todos.map(({ name, done }, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+              <Checkbox
+                defaultChecked={done}
+                sx={{ 
+                  '&.Mui-checked': {
+                    color: blue[600],
+                  },
+                }}
+              />
               <Typography sx={{ margin: '8px' }} variant='h6'>
                 {index + 1}
               </Typography>
@@ -32,7 +41,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                   setTodos([
                     // immutable update
                     ...todos.slice(0, index),
-                    event.target.value,
+                    { description: event.target.value, done: false },
                     ...todos.slice(index + 1),
                   ])
                 }}
@@ -58,7 +67,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               type='button'
               color='primary'
               onClick={() => {
-                setTodos([...todos, ''])
+                setTodos([...todos, { description: '', done: false }])
               }}
             >
               Add Todo <AddIcon />
