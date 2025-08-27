@@ -2,10 +2,12 @@ import React, { useState } from 'react'
 import { TextField, Card, CardContent, CardActions, Button, Typography, Checkbox } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
-import { blue } from '@mui/material/colors';
+import { blue, lightGreen } from '@mui/material/colors';
 
 export const TodoListForm = ({ todoList, saveTodoList }) => {
   const [todos, setTodos] = useState(todoList.todos)
+
+  const allDone = todos.every(todo => todo.done);
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -13,7 +15,13 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
   }
 
   return (
-    <Card sx={{ margin: '0 1rem' }}>
+    <Card
+      sx={{ 
+        margin: '0 1rem',
+        backgroundColor: allDone ? lightGreen[100] : null,
+        transition: 'background-color 0.5s ease'
+      }}
+    >
       <CardContent>
         <Typography component='h2'>{todoList.title}</Typography>
         <form
