@@ -21,6 +21,20 @@ const fetchTodoLists = async () => {
   }
 }
 
+const updateTodoList = async (todoListId, todos) => {
+  try {
+    const res = await fetch(`http://localhost:3001/todoLists/${todoListId}`, {
+      method: 'PUT',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ todos })
+    })
+    const data = await res.json()
+    return data
+  } catch (err) {
+    return console.error(err)
+  }
+}
+
 export const TodoLists = ({ style }) => {
   const [todoLists, setTodoLists] = useState({})
   const [activeList, setActiveList] = useState()
@@ -51,12 +65,13 @@ export const TodoLists = ({ style }) => {
         <TodoListForm
           key={activeList} // use key to make React recreate component to reset internal state
           todoList={todoLists[activeList]}
-          saveTodoList={(id, { todos }) => {
-            const listToUpdate = todoLists[id]
-            setTodoLists({
-              ...todoLists,
-              [id]: { ...listToUpdate, todos },
-            })
+          saveTodoList={async (id, { todos }) =>  {
+            try {
+              const newTodoLists = await updateTodoList(id, todos);
+              setTodoLists(newTodoLists);
+            } catch (err) {
+              console.error(err);
+            }
           }}
         />
       )}
