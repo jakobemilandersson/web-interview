@@ -15,7 +15,7 @@ const fetchTodoLists = async () => {
   try {
     const res = await fetch('http://localhost:3001/todoLists')
     const data = await res.json()
-    return data;
+    return data
   } catch (err) {
     return console.error(err)
   }
@@ -67,11 +67,17 @@ export const TodoLists = ({ style }) => {
           todoList={todoLists[activeList]}
           saveTodoList={async (id, { todos }) =>  {
             try {
-              const newTodoLists = await updateTodoList(id, todos);
-              setTodoLists(newTodoLists);
+              const newTodoLists = await updateTodoList(id, todos)
+              setTodoLists(newTodoLists)
             } catch (err) {
-              console.error(err);
+              console.error(err)
             }
+          }}
+          onTodosChange={(newTodos) => {
+            setTodoLists(oldTodos => ({
+              ...oldTodos,
+              [activeList]: { ...oldTodos[activeList], todos: newTodos }
+            }))
           }}
         />
       )}

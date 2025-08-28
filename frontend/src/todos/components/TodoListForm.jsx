@@ -1,13 +1,11 @@
-import React, { useState } from 'react'
 import { TextField, Card, CardContent, CardActions, Button, Typography, Checkbox } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
-import { blue, lightGreen } from '@mui/material/colors';
+import { blue, lightGreen } from '@mui/material/colors'
 
-export const TodoListForm = ({ todoList, saveTodoList }) => {
-  const [todos, setTodos] = useState(todoList.todos)
-
-  const allDone = todos.every(todo => todo.done);
+export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
+  const todos = todoList.todos
+  const allDone = todos.every(todo => todo.done)
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -38,7 +36,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                 }}
                 checked={done}
                 onChange={(event) => {
-                  setTodos([
+                  onTodosChange([
                     ...todos.slice(0, index),
                     { name: name, done: event.target.checked },
                     ...todos.slice(index + 1),
@@ -53,8 +51,8 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                 label='What to do?'
                 value={name}
                 onChange={(event) => {
-                  setTodos([
-                    // immutable update
+                  // immutable update
+                  onTodosChange([
                     ...todos.slice(0, index),
                     { name: event.target.value, done: done },
                     ...todos.slice(index + 1),
@@ -66,7 +64,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
                 size='small'
                 color='secondary'
                 onClick={() => {
-                  setTodos([
+                  onTodosChange([
                     // immutable delete
                     ...todos.slice(0, index),
                     ...todos.slice(index + 1),
@@ -82,7 +80,7 @@ export const TodoListForm = ({ todoList, saveTodoList }) => {
               type='button'
               color='primary'
               onClick={() => {
-                setTodos([...todos, { name: '', done: false }])
+                onTodosChange([...todos, { name: '', done: false }])
               }}
             >
               Add Todo <AddIcon />
