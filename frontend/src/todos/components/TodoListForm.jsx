@@ -149,9 +149,6 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
             >
               Add Todo <AddIcon />
             </Button>
-            <Button type='submit' variant='contained' color='primary'>
-              Save
-            </Button>
           </CardActions>
         </form>
       </CardContent>
