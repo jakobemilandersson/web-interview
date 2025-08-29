@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 import ReceiptIcon from '@mui/icons-material/Receipt'
 import { TodoListForm } from './TodoListForm'
+import { lightGreen } from '@mui/material/colors'
 
 const fetchTodoLists = async () => {
   try {
@@ -50,14 +51,17 @@ export const TodoLists = ({ style }) => {
         <CardContent>
           <Typography component='h2'>My Todo Lists</Typography>
           <List>
-            {Object.keys(todoLists).map((key) => (
-              <ListItemButton key={key} onClick={() => setActiveList(key)}>
-                <ListItemIcon>
-                  <ReceiptIcon />
-                </ListItemIcon>
-                <ListItemText primary={todoLists[key].title} />
-              </ListItemButton>
-            ))}
+            {Object.keys(todoLists).map((key) => {
+              const allDone = todoLists[key].todos.every(todo => todo.done)
+              return (
+                <ListItemButton key={key} onClick={() => setActiveList(key)} style={{ backgroundColor: allDone ? lightGreen[100] : null, transition: 'background-color 0.5s ease' }} >
+                  <ListItemIcon>
+                    <ReceiptIcon />
+                  </ListItemIcon>
+                  <ListItemText primary={todoLists[key].title} />
+                </ListItemButton>
+              )
+            })}
           </List>
         </CardContent>
       </Card>
