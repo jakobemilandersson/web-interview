@@ -62,7 +62,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
           onSubmit={handleSubmit}
           style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
         >
-          {todos.map(({ name, done, deadline }, index) => (
+          {todos.map(({ name, done, deadline, id }, index) => (
             <div key={index} style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ color: grey[500], alignSelf: 'center', marginTop: '1rem' }}>
                 {timeLeftMap[index]}
@@ -78,7 +78,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   onChange={(event) => {
                     onTodosChange([
                       ...todos.slice(0, index),
-                      { name: name, done: event.target.checked, deadline: deadline },
+                      { ...{ name, deadline, id }, ...{ done: event.target.checked } },
                       ...todos.slice(index + 1),
                     ])
                   }}
@@ -94,7 +94,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                     // immutable update
                     onTodosChange([
                       ...todos.slice(0, index),
-                      { name: event.target.value, done: done, deadline: deadline },
+                      { ...{ done, deadline, id }, ...{ name: event.target.value } },
                       ...todos.slice(index + 1),
                     ])
                   }}
@@ -110,7 +110,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   onChange={(event) => {
                     onTodosChange([
                       ...todos.slice(0, index),
-                      { name: name, done: done, deadline: event.target.value },
+                      { ...{ name, done, id }, ...{ deadline: event.target.value } },
                       ...todos.slice(index + 1),
                     ])
                   }}
@@ -139,7 +139,12 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
               onClick={() => {
                 onTodosChange([
                   ...todos,
-                  { name: '', done: false, deadline: new Date(Date.now() + ONE_DAY_IN_MS).toISOString().slice(0, 16) }
+                  {
+                    name: '',
+                    done: false,
+                    deadline: new Date(Date.now() + ONE_DAY_IN_MS).toISOString().slice(0, 16),
+                    id: todos.length > 0 ? (todos[todos.length - 1].id + 1) : 0
+                  }
                 ])
               }}
             >

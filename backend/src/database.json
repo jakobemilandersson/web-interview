@@ -4,6 +4,7 @@
     "title": "First List",
     "todos": [
       {
+        "id": 0,
         "name": "First todo of first list!",
         "done": false,
         "deadline": "2025-08-28T22:00"
@@ -15,6 +16,7 @@
     "title": "Second List",
     "todos": [
       {
+        "id": 0,
         "name": "First todo of second list!",
         "done": false,
         "deadline": "2025-08-28T22:00"
