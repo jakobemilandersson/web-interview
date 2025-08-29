@@ -48,6 +48,22 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     return isOverdue ? `${timeText} overdue` : `${timeText} left`
   }
 
+  const updateTodo = async (index, updateData) => {
+    const todo = todos[index]
+    const res = await fetch(`http://localhost:3001/todoLists/${todoList.id}/todos/${todo.id}`, { 
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updateData)
+    })
+    const updateTodo = await res.json()
+
+    onTodosChange([
+      ...todos.slice(0, index),
+      { ...todo, ...updateTodo },
+      ...todos.slice(index + 1),
+    ])
+  }
+
   return (
     <Card
       sx={{ 
@@ -75,13 +91,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                     },
                   }}
                   checked={done}
-                  onChange={(event) => {
-                    onTodosChange([
-                      ...todos.slice(0, index),
-                      { ...{ name, deadline, id }, ...{ done: event.target.checked } },
-                      ...todos.slice(index + 1),
-                    ])
-                  }}
+                  onChange={(event) => updateTodo(index, { done: event.target.checked })}
                 />
                 <Typography sx={{ margin: '8px' }} variant='h6'>
                   {index + 1}
@@ -90,14 +100,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   sx={{ flexGrow: 1, marginTop: '0.5rem' }}
                   label='What to do?'
                   value={name}
-                  onChange={(event) => {
-                    // immutable update
-                    onTodosChange([
-                      ...todos.slice(0, index),
-                      { ...{ done, deadline, id }, ...{ name: event.target.value } },
-                      ...todos.slice(index + 1),
-                    ])
-                  }}
+                  onChange={(event) => updateTodo(index, { name: event.target.value })}
                 />
                 <TextField
                   sx={{ flexGrow: 1, marginTop: '0.5rem', marginLeft: '1rem' }}
@@ -107,24 +110,22 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  onChange={(event) => {
-                    onTodosChange([
-                      ...todos.slice(0, index),
-                      { ...{ name, done, id }, ...{ deadline: event.target.value } },
-                      ...todos.slice(index + 1),
-                    ])
-                  }}
+                  onChange={(event) => updateTodo(index, { deadline: event.target.value })}
                 />
                 <Button
                   sx={{ margin: '8px' }}
                   size='small'
                   color='secondary'
-                  onClick={() => {
-                    onTodosChange([
-                      // immutable delete
-                      ...todos.slice(0, index),
-                      ...todos.slice(index + 1),
-                    ])
+                  onClick={async () => {
+                    const res = await fetch(`http://localhost:3001/todoLists/${todoList.id}/todos/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
+
+                    if(res.ok) {
+                      onTodosChange([
+                        // immutable delete
+                        ...todos.slice(0, index),
+                        ...todos.slice(index + 1),
+                      ])
+                    }
                   }}
                 >
                   <DeleteIcon />
@@ -136,15 +137,13 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
             <Button
               type='button'
               color='primary'
-              onClick={() => {
+              onClick={async () => {
+                const res = await fetch(`http://localhost:3001/todoLists/${todoList.id}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+                const todo = await res.json()
+
                 onTodosChange([
                   ...todos,
-                  {
-                    name: '',
-                    done: false,
-                    deadline: new Date(Date.now() + ONE_DAY_IN_MS).toISOString().slice(0, 16),
-                    id: todos.length > 0 ? (todos[todos.length - 1].id + 1) : 0
-                  }
+                  todo
                 ])
               }}
             >
