@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { TextField, Card, CardContent, CardActions, Button, Typography, Checkbox } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import SyncProblemIcon from '@mui/icons-material/SyncProblem';
 import { blue, lightGreen, grey } from '@mui/material/colors'
 import { toast } from 'react-toastify'
 
@@ -13,6 +14,8 @@ const ONE_DAY_IN_MS = 24 * ONE_HOURS_IN_MS
 
 export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   const [timeLeftMap, setTimeLeftMap] = useState([])
+  const [offsyncTodoIds, setOffsyncTodoIds] = useState([])
+
   const todos = todoList.todos
   const allDone = todos.every(todo => todo.done)
   const TODOS_PATH = `${BASE_PATH}/${todoList.id}/todos`
@@ -63,6 +66,17 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     return isOverdue ? `${timeText} overdue` : `${timeText} left`
   }
 
+  const updateOffsyncTodoIds = (todoId, isOffSync = false) => {
+    if(!todoId) return;
+
+    setOffsyncTodoIds(oldOffsyncIds => {
+      if(!isOffSync) return oldOffsyncIds.filter(id => id !== todoId)
+      if(!oldOffsyncIds.includes(todoId)) return [...oldOffsyncIds, todoId]
+
+      return oldOffsyncIds
+    })
+  }
+
   const updateTodo = async (index, updateData) => {
     const todo = todos[index]
     const updatedTodo = await fetchWithErrors(todo.id, { method: 'PUT', body: JSON.stringify(updateData) });
@@ -80,13 +94,18 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     const url = `${TODOS_PATH}${todoId ? `/${todoId}` : ''}`
     const res = await fetch(url, { ...params, headers })
 
+
     if(!res.ok) {
+      if(todoId) updateOffsyncTodoIds(todoId, true)
       const errorData = await res.json();
       const { error } = errorData || { error: 'Unrecognized Error'}
 
       toast.error(error)
       throw new Error(error);
     }
+
+    if(todoId) updateOffsyncTodoIds(todoId)
+
 
       const contentType = res.headers.get('content-type') || '';
       if (contentType.includes('application/json')) {
@@ -115,6 +134,9 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                 {timeLeftMap[index]}
               </span>
               <div style={{ display: 'flex', alignItems: 'center' }}>
+                { offsyncTodoIds.includes(id) && (
+                  <SyncProblemIcon /> 
+                )}
                 <Checkbox
                   sx={{ 
                     '&.Mui-checked': {
