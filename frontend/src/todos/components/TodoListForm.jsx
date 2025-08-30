@@ -100,6 +100,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   sx={{ flexGrow: 1, marginTop: '0.5rem' }}
                   label='What to do?'
                   value={name}
+                  disabled={done}
                   onChange={(event) => updateTodo(index, { name: event.target.value })}
                 />
                 <TextField
@@ -107,6 +108,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   label='Deadline'
                   type='datetime-local'
                   defaultValue={deadline}
+                  disabled={done}
                   InputLabelProps={{
                     shrink: true,
                   }}
