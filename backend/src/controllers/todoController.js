@@ -48,6 +48,6 @@ export function validateData(data) {
   if('done' in data && (typeof data.done !== 'boolean')) throw new SellpyError('Todo "done" must be true or false, 400');
   if('deadline' in data) {
     const deadlineDate = new Date(data.deadline);
-    if(isNaN(deadlineDate.getTime()) || deadlineDate < new Date()) throw new SellpyError('Todo "deadline" must be in the future', 400);
+    if(isNaN(deadlineDate.getTime()) || deadlineDate < new Date()) throw new SellpyError('Todo "deadline" must be a valid date in the future', 400);
   }
 }

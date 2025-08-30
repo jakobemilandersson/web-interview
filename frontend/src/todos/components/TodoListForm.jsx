@@ -3,6 +3,7 @@ import { TextField, Card, CardContent, CardActions, Button, Typography, Checkbox
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import { blue, lightGreen, grey } from '@mui/material/colors'
+import { toast } from 'react-toastify'
 
 const ONE_MINUTE_IN_MS = 60 * 1000
 const ONE_HOURS_IN_MS = 60 * ONE_MINUTE_IN_MS
@@ -60,19 +61,37 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   }
 
   const updateTodo = async (index, updateData) => {
+    try {
     const todo = todos[index]
-    const res = await fetch(`http://localhost:3001/todoLists/${todoList.id}/todos/${todo.id}`, { 
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updateData)
-    })
-    const updateTodo = await res.json()
+      const updatedTodo = await fetchWithErrors(`http://localhost:3001/todoLists/${todoList.id}/todos/${todo.id}`, { method: 'PUT', body: JSON.stringify(updateData) });
 
     onTodosChange([
       ...todos.slice(0, index),
-      { ...todo, ...updateTodo },
+        { ...todo, ...updatedTodo },
       ...todos.slice(index + 1),
     ])
+      toast.success('Todo updated')
+    } catch (err) { 
+      console.error(err)
+      toast.error(err.message) 
+    }
+  }
+
+  const fetchWithErrors = async (url, params = {}) => {
+    const headers = { 'Content-Type': 'application/json' }
+    const res = await fetch(url, { ...params, headers })
+
+    if(!res.ok) {
+      const errorData = await res.json();
+      const { error } = errorData || { error: 'Unrecognized Error'}
+      throw new Error(error)
+    }
+
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        return await res.json();
+    }
+    return { ok: true }
   }
 
   return (
@@ -90,7 +109,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
           style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
         >
           {todos.map(({ name, done, deadline, id }, index) => (
-            <div key={index} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div key={id} style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ color: done ? lightGreen[800] : grey[600], alignSelf: 'center', marginTop: '1rem' }}>
                 {timeLeftMap[index]}
               </span>
@@ -130,7 +149,8 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   size='small'
                   color='secondary'
                   onClick={async () => {
-                    const res = await fetch(`http://localhost:3001/todoLists/${todoList.id}/todos/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
+                    try {
+                    const res = await fetchWithErrors(`http://localhost:3001/todoLists/${todoList.id}/todos/${id}`, { method: 'DELETE' });
 
                     if(res.ok) {
                       onTodosChange([
@@ -138,6 +158,11 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                         ...todos.slice(0, index),
                         ...todos.slice(index + 1),
                       ])
+                      toast.success('Removed todo')
+                      }
+                    } catch (err) { 
+                      console.error(err);
+                      toast.error(err.message)
                     }
                   }}
                 >
@@ -151,13 +176,18 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
               type='button'
               color='primary'
               onClick={async () => {
-                const res = await fetch(`http://localhost:3001/todoLists/${todoList.id}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
-                const todo = await res.json()
+                try {
+                const todo = await fetchWithErrors(`http://localhost:3001/todoLists/${todoList.id}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
 
                 onTodosChange([
                   ...todos,
                   todo
                 ])
+                  toast.success('Added new todo')
+                } catch (err) { 
+                  console.error(err);
+                  toast.error(err.message)
+                }
               }}
             >
               Add Todo <AddIcon />
