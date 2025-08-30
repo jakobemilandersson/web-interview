@@ -4,8 +4,16 @@ module.exports = {
   },
   extends: 'eslint:recommended',
   parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
+    ecmaVersion: 'latest',
+    sourceType: 'module',
   },
-  rules: {},
-}
+  rules: {
+    indent: ['error', 2],
+    semi: ['error', 'always'],
+    quotes: ['error', 'single'],
+    'object-curly-spacing': ['error', 'always'],
+    'array-bracket-spacing': ['error', 'never'],
+    'eol-last': ['error', 'always'],
+    'no-trailing-spaces': 'error'
+  },
+};
