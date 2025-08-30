@@ -52,7 +52,8 @@ export const TodoLists = ({ style }) => {
           <Typography component='h2'>My Todo Lists</Typography>
           <List>
             {Object.keys(todoLists).map((key) => {
-              const allDone = todoLists[key].todos.every(todo => todo.done)
+              const { todos } = todoLists[key]
+              const allDone = todos.length > 0 && todos.every(todo => todo.done)
               return (
                 <ListItemButton key={key} onClick={() => setActiveList(key)} style={{ backgroundColor: allDone ? lightGreen[100] : null, transition: 'background-color 0.5s ease' }} >
                   <ListItemIcon>

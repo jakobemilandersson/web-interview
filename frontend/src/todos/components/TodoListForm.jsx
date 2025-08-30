@@ -17,7 +17,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   const [offsyncTodosData, setOffsyncTodosData] = useState({})
 
   const todos = todoList.todos
-  const allDone = todos.every(todo => todo.done)
+  const allDone = todos.length > 0 && todos.every(todo => todo.done)
   const TODOS_PATH = `${BASE_PATH}/${todoList.id}/todos`
 
   useEffect(() => {
