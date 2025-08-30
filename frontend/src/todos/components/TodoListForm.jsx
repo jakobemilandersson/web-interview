@@ -5,6 +5,8 @@ import AddIcon from '@mui/icons-material/Add'
 import { blue, lightGreen, grey } from '@mui/material/colors'
 import { toast } from 'react-toastify'
 
+const BASE_PATH = 'http://localhost:3001/todoLists'
+
 const ONE_MINUTE_IN_MS = 60 * 1000
 const ONE_HOURS_IN_MS = 60 * ONE_MINUTE_IN_MS
 const ONE_DAY_IN_MS = 24 * ONE_HOURS_IN_MS
@@ -13,6 +15,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   const [timeLeftMap, setTimeLeftMap] = useState([])
   const todos = todoList.todos
   const allDone = todos.every(todo => todo.done)
+  const TODOS_PATH = `${BASE_PATH}/${todoList.id}/todos`
 
   useEffect(() => {
     const updateTimeLeft = (todos) => setTimeLeftMap(todos.map((todo) => getTimeLeftText(todo)))
@@ -61,9 +64,8 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   }
 
   const updateTodo = async (index, updateData) => {
-    try {
     const todo = todos[index]
-      const updatedTodo = await fetchWithErrors(`http://localhost:3001/todoLists/${todoList.id}/todos/${todo.id}`, { method: 'PUT', body: JSON.stringify(updateData) });
+    const updatedTodo = await fetchWithErrors(todo.id, { method: 'PUT', body: JSON.stringify(updateData) });
 
     onTodosChange([
       ...todos.slice(0, index),
@@ -71,20 +73,19 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
       ...todos.slice(index + 1),
     ])
       toast.success('Todo updated')
-    } catch (err) { 
-      console.error(err)
-      toast.error(err.message) 
-    }
   }
 
-  const fetchWithErrors = async (url, params = {}) => {
+  const fetchWithErrors = async (todoId, params = {}) => {
     const headers = { 'Content-Type': 'application/json' }
+    const url = `${TODOS_PATH}${todoId ? `/${todoId}` : ''}`
     const res = await fetch(url, { ...params, headers })
 
     if(!res.ok) {
       const errorData = await res.json();
       const { error } = errorData || { error: 'Unrecognized Error'}
-      throw new Error(error)
+
+      toast.error(error)
+      throw new Error(error);
     }
 
       const contentType = res.headers.get('content-type') || '';
@@ -149,8 +150,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   size='small'
                   color='secondary'
                   onClick={async () => {
-                    try {
-                    const res = await fetchWithErrors(`http://localhost:3001/todoLists/${todoList.id}/todos/${id}`, { method: 'DELETE' });
+                    const res = await fetchWithErrors(id, { method: 'DELETE' });
 
                     if(res.ok) {
                       onTodosChange([
@@ -159,10 +159,6 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                         ...todos.slice(index + 1),
                       ])
                       toast.success('Removed todo')
-                      }
-                    } catch (err) { 
-                      console.error(err);
-                      toast.error(err.message)
                     }
                   }}
                 >
@@ -176,18 +172,13 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
               type='button'
               color='primary'
               onClick={async () => {
-                try {
-                const todo = await fetchWithErrors(`http://localhost:3001/todoLists/${todoList.id}/todos`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const todo = await fetchWithErrors(null, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
 
                 onTodosChange([
                   ...todos,
                   todo
                 ])
                   toast.success('Added new todo')
-                } catch (err) { 
-                  console.error(err);
-                  toast.error(err.message)
-                }
               }}
             >
               Add Todo <AddIcon />
