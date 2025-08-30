@@ -1,6 +1,7 @@
 import React from 'react'
 import { AppBar, Toolbar, Typography } from '@mui/material'
 import { TodoLists } from './todos/components/TodoLists'
+import { ToastContainer } from 'react-toastify';
 
 const MainAppBar = () => {
   return (
@@ -37,6 +38,7 @@ const App = () => {
   return (
     <MainWrapper>
       <TodoLists style={{ margin: '1rem' }} />
+      <ToastContainer />
     </MainWrapper>
   )
 }
