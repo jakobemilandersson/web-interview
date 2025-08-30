@@ -14,7 +14,7 @@ const ONE_DAY_IN_MS = 24 * ONE_HOURS_IN_MS
 
 export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   const [timeLeftMap, setTimeLeftMap] = useState([])
-  const [offsyncTodoIds, setOffsyncTodoIds] = useState([])
+  const [offsyncTodosData, setOffsyncTodosData] = useState({})
 
   const todos = todoList.todos
   const allDone = todos.every(todo => todo.done)
@@ -29,7 +29,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     if(notDoneTodos.length > 0) {
       const interval = setInterval(
         () => { updateTimeLeft(todos) },
-        ONE_MINUTE_IN_MS / 30
+        ONE_MINUTE_IN_MS
       )
 
     return () => clearInterval(interval)
@@ -66,14 +66,21 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     return isOverdue ? `${timeText} overdue` : `${timeText} left`
   }
 
-  const updateOffsyncTodoIds = (todoId, isOffSync = false) => {
+  const updateOffsyncTodoIds = (todoId, isOffSync = false, offsyncData = {}) => {
+    const { property } = offsyncData; // Property of todo that is offsync TODO: multiple properites handling without input disabling
     if(!todoId) return;
+    if(isOffSync && !property) return // TODO: fix so offsync is visible for edgecases where no offsync property is recognized
 
-    setOffsyncTodoIds(oldOffsyncIds => {
-      if(!isOffSync) return oldOffsyncIds.filter(id => id !== todoId)
-      if(!oldOffsyncIds.includes(todoId)) return [...oldOffsyncIds, todoId]
+    setOffsyncTodosData(oldOffsyncItems => {
+      const newOffsyncItems = { ...oldOffsyncItems }
 
-      return oldOffsyncIds
+      if(!isOffSync) { // Property is no longer offsync
+        delete newOffsyncItems[todoId]
+      } else { // Property IS offsync
+        newOffsyncItems[todoId] = property
+      }
+
+      return newOffsyncItems
     })
   }
 
@@ -96,9 +103,10 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
 
 
     if(!res.ok) {
-      if(todoId) updateOffsyncTodoIds(todoId, true)
       const errorData = await res.json();
-      const { error } = errorData || { error: 'Unrecognized Error'}
+      const { error = 'Unrecognized Error', details = {} } = errorData
+
+      if(todoId) updateOffsyncTodoIds(todoId, true, details)
 
       toast.error(error)
       throw new Error(error);
@@ -107,11 +115,24 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     if(todoId) updateOffsyncTodoIds(todoId)
 
 
-      const contentType = res.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        return await res.json();
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return await res.json();
     }
     return { ok: true }
+  }
+
+  const inputDisabled = (todo, name, overrideDone = false) => {
+    const { done, id } = todo;
+
+    // Check if Todo has any offsync property, if so only enable the input of the offsync property
+    if(offsyncTodosData[id]) {
+      const property = offsyncTodosData[id]
+
+      return name !== property // Todo is offsync with server so disable all inputs except for the one with the offsync property
+    }
+    if(!overrideDone && done) return true; // Todo is marked as done and input is other than "done"-checkbox
+    return false;
   }
 
   return (
@@ -134,7 +155,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                 {timeLeftMap[index]}
               </span>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                { offsyncTodoIds.includes(id) && (
+                { offsyncTodosData[id] && (
                   <SyncProblemIcon /> 
                 )}
                 <Checkbox
@@ -144,6 +165,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                     },
                   }}
                   checked={done}
+                  disabled={inputDisabled({ id, done }, "done", true)}
                   onChange={(event) => updateTodo(index, { done: event.target.checked })}
                 />
                 <Typography sx={{ margin: '8px' }} variant='h6'>
@@ -153,7 +175,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   sx={{ flexGrow: 1, marginTop: '0.5rem' }}
                   label='What to do?'
                   defaultValue={name}
-                  disabled={done}
+                  disabled={inputDisabled({ id, done }, "name")}
                   onBlur={(event) => updateTodo(index, { name: event.target.value })}
                 />
                 <TextField
@@ -161,7 +183,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   label='Deadline'
                   type='datetime-local'
                   defaultValue={deadline}
-                  disabled={done}
+                  disabled={inputDisabled({ id, done }, "deadline")}
                   InputLabelProps={{
                     shrink: true,
                   }}

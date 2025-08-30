@@ -7,10 +7,10 @@ export function create(todoListId) {
   const { todos } = getTodoList(todoListId);
 
   const todo = {
-    name: '',
+    name: 'Edit this empty todo! 🙃',
     done: false,
     deadline: new Date(Date.now() + ONE_DAY_IN_MS).toISOString().slice(0, 16),
-    id: todos.length > 0 ? (todos[todos.length - 1].id + 1) : 0
+    id: todos.length > 0 ? (todos[todos.length - 1].id + 1) : 1
   };
   todos.push(todo); // Append new 'todo'
 

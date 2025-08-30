@@ -44,10 +44,10 @@ function updateParms(req) {
 }
 
 export function validateData(data) {
-  if('name' in data  && !(data.name?.trim()?.length > 0)) throw new SellpyError('Todo "name" cant be empty', 400);
-  if('done' in data && (typeof data.done !== 'boolean')) throw new SellpyError('Todo "done" must be true or false, 400');
+  if('name' in data  && !(data.name?.trim()?.length > 0)) throw new SellpyError('Todo "name" cant be empty', 400, { property: 'name' });
+  if('done' in data && (typeof data.done !== 'boolean')) throw new SellpyError('Todo "done" must be true or false', 400, { property: 'done' });
   if('deadline' in data) {
     const deadlineDate = new Date(data.deadline);
-    if(isNaN(deadlineDate.getTime()) || deadlineDate < new Date()) throw new SellpyError('Todo "deadline" must be a valid date in the future', 400);
+    if(isNaN(deadlineDate.getTime()) || deadlineDate < new Date()) throw new SellpyError('Todo "deadline" must be a valid date in the future', 400, { property: 'deadline' });
   }
 }
