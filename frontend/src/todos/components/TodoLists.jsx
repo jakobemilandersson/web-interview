@@ -26,8 +26,8 @@ const updateTodoList = async (todoListId, todos) => {
   try {
     const res = await fetch(`http://localhost:3001/todoLists/${todoListId}`, {
       method: 'PUT',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ todos })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ todos }),
     })
     const data = await res.json()
     return data
@@ -53,9 +53,16 @@ export const TodoLists = ({ style }) => {
           <List>
             {Object.keys(todoLists).map((key) => {
               const { todos } = todoLists[key]
-              const allDone = todos.length > 0 && todos.every(todo => todo.done)
+              const allDone = todos.length > 0 && todos.every((todo) => todo.done)
               return (
-                <ListItemButton key={key} onClick={() => setActiveList(key)} style={{ backgroundColor: allDone ? lightGreen[100] : null, transition: 'background-color 0.5s ease' }} >
+                <ListItemButton
+                  key={key}
+                  onClick={() => setActiveList(key)}
+                  style={{
+                    backgroundColor: allDone ? lightGreen[100] : null,
+                    transition: 'background-color 0.5s ease',
+                  }}
+                >
                   <ListItemIcon>
                     <ReceiptIcon />
                   </ListItemIcon>
@@ -70,7 +77,7 @@ export const TodoLists = ({ style }) => {
         <TodoListForm
           key={activeList} // use key to make React recreate component to reset internal state
           todoList={todoLists[activeList]}
-          saveTodoList={async (id, { todos }) =>  {
+          saveTodoList={async (id, { todos }) => {
             try {
               const newTodoLists = await updateTodoList(id, todos)
               setTodoLists(newTodoLists)
@@ -79,9 +86,9 @@ export const TodoLists = ({ style }) => {
             }
           }}
           onTodosChange={(newTodos) => {
-            setTodoLists(oldTodos => ({
+            setTodoLists((oldTodos) => ({
               ...oldTodos,
-              [activeList]: { ...oldTodos[activeList], todos: newTodos }
+              [activeList]: { ...oldTodos[activeList], todos: newTodos },
             }))
           }}
         />

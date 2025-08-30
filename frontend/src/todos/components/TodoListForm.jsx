@@ -1,8 +1,16 @@
 import { useEffect, useState } from 'react'
-import { TextField, Card, CardContent, CardActions, Button, Typography, Checkbox } from '@mui/material'
+import {
+  TextField,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Typography,
+  Checkbox,
+} from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
-import SyncProblemIcon from '@mui/icons-material/SyncProblem';
+import SyncProblemIcon from '@mui/icons-material/SyncProblem'
 import { blue, lightGreen, grey } from '@mui/material/colors'
 import { toast } from 'react-toastify'
 
@@ -17,22 +25,21 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   const [offsyncTodosData, setOffsyncTodosData] = useState({})
 
   const todos = todoList.todos
-  const allDone = todos.length > 0 && todos.every(todo => todo.done)
+  const allDone = todos.length > 0 && todos.every((todo) => todo.done)
   const TODOS_PATH = `${BASE_PATH}/${todoList.id}/todos`
 
   useEffect(() => {
     const updateTimeLeft = (todos) => setTimeLeftMap(todos.map((todo) => getTimeLeftText(todo)))
 
-    const notDoneTodos = todos.filter(todo => !todo.done)
+    const notDoneTodos = todos.filter((todo) => !todo.done)
 
     updateTimeLeft(todos)
-    if(notDoneTodos.length > 0) {
-      const interval = setInterval(
-        () => { updateTimeLeft(todos) },
-        ONE_MINUTE_IN_MS
-      )
+    if (notDoneTodos.length > 0) {
+      const interval = setInterval(() => {
+        updateTimeLeft(todos)
+      }, ONE_MINUTE_IN_MS)
 
-    return () => clearInterval(interval)
+      return () => clearInterval(interval)
     }
   }, [todos])
 
@@ -42,41 +49,41 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   }
 
   const getTimeLeftText = (todo) => {
-    const { deadline, done } = todo;
+    const { deadline, done } = todo
 
-    if(done) return 'Completed'
+    if (done) return 'Completed'
 
     const diffInMs = new Date(deadline) - new Date()
     const isOverdue = diffInMs < 0
     const absolutDiffInMs = Math.abs(diffInMs)
-    
+
     const days = Math.floor(absolutDiffInMs / ONE_DAY_IN_MS)
     const hours = Math.floor(absolutDiffInMs / ONE_HOURS_IN_MS) % 24
     const minutes = Math.floor(absolutDiffInMs / ONE_MINUTE_IN_MS) % 60
-    
-    const timeParts = [
-      days && `${days}d`,
-      hours && `${hours}h`,
-      minutes && `${minutes}m`
-    ].filter(Boolean)
-    
-    if(!timeParts.length) return ''
+
+    const timeParts = [days && `${days}d`, hours && `${hours}h`, minutes && `${minutes}m`].filter(
+      Boolean,
+    )
+
+    if (!timeParts.length) return ''
 
     const timeText = timeParts.join(' ')
     return isOverdue ? `${timeText} overdue` : `${timeText} left`
   }
 
   const updateOffsyncTodoIds = (todoId, isOffSync = false, offsyncData = {}) => {
-    const { property } = offsyncData; // Property of todo that is offsync TODO: multiple properites handling without input disabling
-    if(!todoId) return;
-    if(isOffSync && !property) return // TODO: fix so offsync is visible for edgecases where no offsync property is recognized
+    const { property } = offsyncData // Property of todo that is offsync TODO: multiple properites handling without input disabling
+    if (!todoId) return
+    if (isOffSync && !property) return // TODO: fix so offsync is visible for edgecases where no offsync property is recognized
 
-    setOffsyncTodosData(oldOffsyncItems => {
+    setOffsyncTodosData((oldOffsyncItems) => {
       const newOffsyncItems = { ...oldOffsyncItems }
 
-      if(!isOffSync) { // Property is no longer offsync
+      if (!isOffSync) {
+        // Property is no longer offsync
         delete newOffsyncItems[todoId]
-      } else { // Property IS offsync
+      } else {
+        // Property IS offsync
         newOffsyncItems[todoId] = property
       }
 
@@ -86,14 +93,17 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
 
   const updateTodo = async (index, updateData) => {
     const todo = todos[index]
-    const updatedTodo = await fetchWithErrors(todo.id, { method: 'PUT', body: JSON.stringify(updateData) });
+    const updatedTodo = await fetchWithErrors(todo.id, {
+      method: 'PUT',
+      body: JSON.stringify(updateData),
+    })
 
     onTodosChange([
       ...todos.slice(0, index),
-        { ...todo, ...updatedTodo },
+      { ...todo, ...updatedTodo },
       ...todos.slice(index + 1),
     ])
-      toast.success('Todo updated')
+    toast.success('Todo updated')
   }
 
   const fetchWithErrors = async (todoId, params = {}) => {
@@ -101,46 +111,44 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     const url = `${TODOS_PATH}${todoId ? `/${todoId}` : ''}`
     const res = await fetch(url, { ...params, headers })
 
-
-    if(!res.ok) {
-      const errorData = await res.json();
+    if (!res.ok) {
+      const errorData = await res.json()
       const { error = 'Unrecognized Error', details = {} } = errorData
 
-      if(todoId) updateOffsyncTodoIds(todoId, true, details)
+      if (todoId) updateOffsyncTodoIds(todoId, true, details)
 
       toast.error(error)
-      throw new Error(error);
+      throw new Error(error)
     }
 
-    if(todoId) updateOffsyncTodoIds(todoId)
+    if (todoId) updateOffsyncTodoIds(todoId)
 
-
-    const contentType = res.headers.get('content-type') || '';
+    const contentType = res.headers.get('content-type') || ''
     if (contentType.includes('application/json')) {
-      return await res.json();
+      return await res.json()
     }
     return { ok: true }
   }
 
   const inputDisabled = (todo, name, overrideDone = false) => {
-    const { done, id } = todo;
+    const { done, id } = todo
 
     // Check if Todo has any offsync property, if so only enable the input of the offsync property
-    if(offsyncTodosData[id]) {
+    if (offsyncTodosData[id]) {
       const property = offsyncTodosData[id]
 
       return name !== property // Todo is offsync with server so disable all inputs except for the one with the offsync property
     }
-    if(!overrideDone && done) return true; // Todo is marked as done and input is other than "done"-checkbox
-    return false;
+    if (!overrideDone && done) return true // Todo is marked as done and input is other than "done"-checkbox
+    return false
   }
 
   return (
     <Card
-      sx={{ 
+      sx={{
         margin: '0 1rem',
         backgroundColor: allDone ? lightGreen[100] : null,
-        transition: 'background-color 0.5s ease'
+        transition: 'background-color 0.5s ease',
       }}
     >
       <CardContent>
@@ -151,21 +159,25 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
         >
           {todos.map(({ name, done, deadline, id }, index) => (
             <div key={id} style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ color: done ? lightGreen[800] : grey[600], alignSelf: 'center', marginTop: '1rem' }}>
+              <span
+                style={{
+                  color: done ? lightGreen[800] : grey[600],
+                  alignSelf: 'center',
+                  marginTop: '1rem',
+                }}
+              >
                 {timeLeftMap[index]}
               </span>
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                { offsyncTodosData[id] && (
-                  <SyncProblemIcon /> 
-                )}
+                {offsyncTodosData[id] && <SyncProblemIcon />}
                 <Checkbox
-                  sx={{ 
+                  sx={{
                     '&.Mui-checked': {
                       color: blue[600],
                     },
                   }}
                   checked={done}
-                  disabled={inputDisabled({ id, done }, "done", true)}
+                  disabled={inputDisabled({ id, done }, 'done', true)}
                   onChange={(event) => updateTodo(index, { done: event.target.checked })}
                 />
                 <Typography sx={{ margin: '8px' }} variant='h6'>
@@ -175,7 +187,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   sx={{ flexGrow: 1, marginTop: '0.5rem' }}
                   label='What to do?'
                   defaultValue={name}
-                  disabled={inputDisabled({ id, done }, "name")}
+                  disabled={inputDisabled({ id, done }, 'name')}
                   onBlur={(event) => updateTodo(index, { name: event.target.value })}
                 />
                 <TextField
@@ -183,7 +195,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   label='Deadline'
                   type='datetime-local'
                   defaultValue={deadline}
-                  disabled={inputDisabled({ id, done }, "deadline")}
+                  disabled={inputDisabled({ id, done }, 'deadline')}
                   InputLabelProps={{
                     shrink: true,
                   }}
@@ -194,9 +206,9 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   size='small'
                   color='secondary'
                   onClick={async () => {
-                    const res = await fetchWithErrors(id, { method: 'DELETE' });
+                    const res = await fetchWithErrors(id, { method: 'DELETE' })
 
-                    if(res.ok) {
+                    if (res.ok) {
                       onTodosChange([
                         // immutable delete
                         ...todos.slice(0, index),
@@ -216,13 +228,13 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
               type='button'
               color='primary'
               onClick={async () => {
-                const todo = await fetchWithErrors(null, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                const todo = await fetchWithErrors(null, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                })
 
-                onTodosChange([
-                  ...todos,
-                  todo
-                ])
-                  toast.success('Added new todo')
+                onTodosChange([...todos, todo])
+                toast.success('Added new todo')
               }}
             >
               Add Todo <AddIcon />
