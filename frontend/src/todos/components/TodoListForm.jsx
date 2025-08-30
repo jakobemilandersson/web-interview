@@ -99,9 +99,9 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                 <TextField
                   sx={{ flexGrow: 1, marginTop: '0.5rem' }}
                   label='What to do?'
-                  value={name}
+                  defaultValue={name}
                   disabled={done}
-                  onChange={(event) => updateTodo(index, { name: event.target.value })}
+                  onBlur={(event) => updateTodo(index, { name: event.target.value })}
                 />
                 <TextField
                   sx={{ flexGrow: 1, marginTop: '0.5rem', marginLeft: '1rem' }}
@@ -112,7 +112,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
                   InputLabelProps={{
                     shrink: true,
                   }}
-                  onChange={(event) => updateTodo(index, { deadline: event.target.value })}
+                  onBlur={(event) => updateTodo(index, { deadline: event.target.value })}
                 />
                 <Button
                   sx={{ margin: '8px' }}
