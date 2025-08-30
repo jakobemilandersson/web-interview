@@ -12,9 +12,11 @@ import ReceiptIcon from '@mui/icons-material/Receipt'
 import { TodoListForm } from './TodoListForm'
 import { lightGreen } from '@mui/material/colors'
 
+const BASE_PATH = 'http://localhost:3001/todoLists'
+
 const fetchTodoLists = async () => {
   try {
-    const res = await fetch('http://localhost:3001/todoLists')
+    const res = await fetch(BASE_PATH)
     const data = await res.json()
     return data
   } catch (err) {
@@ -24,7 +26,7 @@ const fetchTodoLists = async () => {
 
 const updateTodoList = async (todoListId, todos) => {
   try {
-    const res = await fetch(`http://localhost:3001/todoLists/${todoListId}`, {
+    const res = await fetch(`${BASE_PATH}/${todoListId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ todos }),
