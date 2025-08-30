@@ -9,8 +9,7 @@ export function create(req, res) {
 
 export function update(req, res) {
     const { todoListId, todoId } = req.params;
-    const { name, done, deadline } = req.body;
-    const updateData = { name, done, deadline };
+    const updateData = updateParms(req);
 
     const updatedTodo = Todo.update(todoListId, todoId, updateData);
 
@@ -22,4 +21,15 @@ export function destroy(req, res) {
     Todo.destroy(todoListId, todoId);
 
     res.sendStatus(200);
+}
+
+function updateParms(req) {
+    const { name, done, deadline } = req.body;
+    const params = {};
+
+    if(name !== undefined) params.name = name;
+    if(done !== undefined) params.done = done;
+    if(deadline !== undefined) params.deadline = deadline;
+
+    return params;
 }
