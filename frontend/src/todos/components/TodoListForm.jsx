@@ -19,8 +19,8 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
 
     const notDoneTodos = todos.filter(todo => !todo.done)
 
+    updateTimeLeft(todos)
     if(notDoneTodos.length > 0) {
-      updateTimeLeft(todos)
       const interval = setInterval(
         () => { updateTimeLeft(todos) },
         ONE_MINUTE_IN_MS / 30
