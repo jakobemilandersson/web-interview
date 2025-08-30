@@ -14,12 +14,19 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
   const allDone = todos.every(todo => todo.done)
 
   useEffect(() => {
-    const updateTimeLeft = () => setTimeLeftMap(todos.map((todo) => getTimeLeftText(todo.deadline)))
+    const updateTimeLeft = (todos) => setTimeLeftMap(todos.map((todo) => getTimeLeftText(todo)))
 
-    updateTimeLeft()
-    const interval = setInterval(updateTimeLeft, ONE_MINUTE_IN_MS)
+    const notDoneTodos = todos.filter(todo => !todo.done)
+
+    if(notDoneTodos.length > 0) {
+      updateTimeLeft(todos)
+      const interval = setInterval(
+        () => { updateTimeLeft(todos) },
+        ONE_MINUTE_IN_MS / 30
+      )
 
     return () => clearInterval(interval)
+    }
   }, [todos])
 
   const handleSubmit = (event) => {
@@ -27,7 +34,11 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
     saveTodoList(todoList.id, { todos })
   }
 
-  const getTimeLeftText = (deadline) => {
+  const getTimeLeftText = (todo) => {
+    const { deadline, done } = todo;
+
+    if(done) return 'Completed'
+
     const diffInMs = new Date(deadline) - new Date()
     const isOverdue = diffInMs < 0
     const absolutDiffInMs = Math.abs(diffInMs)
@@ -80,7 +91,7 @@ export const TodoListForm = ({ todoList, saveTodoList, onTodosChange }) => {
         >
           {todos.map(({ name, done, deadline, id }, index) => (
             <div key={index} style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ color: grey[500], alignSelf: 'center', marginTop: '1rem' }}>
+              <span style={{ color: done ? lightGreen[800] : grey[600], alignSelf: 'center', marginTop: '1rem' }}>
                 {timeLeftMap[index]}
               </span>
               <div style={{ display: 'flex', alignItems: 'center' }}>
